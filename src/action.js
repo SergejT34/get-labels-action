@@ -5,7 +5,7 @@ const { Octokit } = require("@octokit/core");
 export async function processTrigger() {
     let labels = await getPushEventLabels()
     if (labels.labels === 0) {
-        return labels
+        return labels;
     }
 
     setOutputs(labels)
@@ -30,11 +30,13 @@ async function getPushEventLabels() {
             repo: github.context.repo.repo,
             commit_sha: github.context.sha
         })
+        core.info(pulls.data[0].labels)
+        core.info(pulls.headers)
         return pulls.data[0].labels
     } catch (error) {
         core.error(error)
     }
-    return {};
+    return [];
 }
 
 function setOutputs(labels) {
