@@ -9835,37 +9835,39 @@ async function getPushEventLabels() {
 }
 
 function setOutputs(labels) {
-    core.info((0,external_util_.inspect)(labels))
-    const labelNames = labels.map(label => label.name)
-    core.setOutput("labels", labelNames.join(','));
+    if (labels !== undefined) {
+        const labelNames = labels.map(label => label.name)
+        core.setOutput("labels", labelNames.join(','));
 
-    const labelKey = core.getInput('label_key');
-    const keyedValues = labelNames.filter(
-        labelName => labelName.startsWith(labelKey + ":")
-    ).map(
-        keyedLabel => keyedLabel.substring(labelKey.length + 1, keyedLabel.length)
-    )
+        const labelKey = core.getInput('label_key');
+        const keyedValues = labelNames.filter(
+            labelName => labelName.startsWith(labelKey + ":")
+        ).map(
+            keyedLabel => keyedLabel.substring(labelKey.length + 1, keyedLabel.length)
+        )
 
-    const valueOrder = core.getInput('label_value_order')
-    const valueOrderArray = valueOrder.split(',')
-    let outputValue = ''
-    for (let value of valueOrderArray) {
-        if (keyedValues.includes(value)) {
-            outputValue = value
-            break;
+        const valueOrder = core.getInput('label_value_order')
+        const valueOrderArray = valueOrder.split(',')
+        let outputValue = ''
+        for (let value of valueOrderArray) {
+            if (keyedValues.includes(value)) {
+                outputValue = value
+                break;
+            }
         }
-    }
 
-    if (outputValue === '') {
-        if (keyedValues.length > 0) {
-            outputValue = keyedValues.sort()[0]
-        } else {
-            outputValue = core.getInput('default_label_value')
+        if (outputValue === '') {
+            if (keyedValues.length > 0) {
+                outputValue = keyedValues.sort()[0]
+            } else {
+                outputValue = core.getInput('default_label_value')
+            }
         }
-    }
 
-    core.setOutput("label_value", outputValue);
-    return outputValue
+        core.setOutput("label_value", outputValue);
+        return outputValue
+    }
+    return core.setOutput("label_value", core.getInput('default_label_value'));
 }
 
 ;// CONCATENATED MODULE: ./index.js
