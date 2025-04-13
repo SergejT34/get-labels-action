@@ -9806,7 +9806,7 @@ async function processTrigger() {
     } else {
         labels = await getPushEventLabels()
     }
-    if (labels.labels === 0) {
+    if (labels.labels !== undefined && labels.labels === 0) {
         return labels;
     }
 
@@ -9831,7 +9831,10 @@ async function getPushEventLabels() {
             'X-GitHub-Api-Version': '2022-11-28'
         }
     })
-    return pulls.data[0].labels
+    if (pulls.data !== undefined && pulls.data.length > 0) {
+        return pulls.data[0].labels
+    }
+    return [];
 }
 
 function setOutputs(labels) {

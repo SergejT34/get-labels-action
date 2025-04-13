@@ -10,7 +10,7 @@ export async function processTrigger() {
     } else {
         labels = await getPushEventLabels()
     }
-    if (labels.labels === 0) {
+    if (labels.labels !== undefined && labels.labels === 0) {
         return labels;
     }
 
