@@ -29,15 +29,17 @@ async function getPushEventLabels() {
         auth: github_token
     })
 
-    const pulls = await octokit.request('GET /repos/{owner}/{repo}/commits/{commit_sha}/pulls', {
-        owner: github.context.repo.owner,
-        repo: github.context.repo.repo,
-        commit_sha: github.context.sha,
-        headers: {
-            'X-GitHub-Api-Version': '2022-11-28'
-        }
-    })
-    return pulls.data[0].labels
+    try {
+        const pulls = await octokit.request('GET /repos/{owner}/{repo}/commits/{commit_sha}/pulls', {
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            commit_sha: github.context.sha
+        })
+        return pulls.data[0].labels
+    } catch (error) {
+        core.error(error)
+    }
+    return {};
 }
 
 function setOutputs(labels) {
