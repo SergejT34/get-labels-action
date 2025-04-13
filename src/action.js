@@ -3,12 +3,7 @@ const core = require("@actions/core");
 const { Octokit } = require("@octokit/core");
 
 export async function processTrigger() {
-    let labels
-    if (github.context.eventName === 'pull_request'){
-        labels = github.context.payload?.pull_request?.labels
-    } else {
-        labels = await getPushEventLabels()
-    }
+    let labels = await getPushEventLabels()
     if (labels.labels === 0) {
         return labels
     }
