@@ -1,9 +1,15 @@
-const github  = require("@actions/github");
+const github = require("@actions/github");
 const core = require("@actions/core");
-const { Octokit } = require("@octokit/core");
+const {Octokit} = require("@octokit/core");
+import {inspect} from 'util'
 
 export async function processTrigger() {
-    let labels = await getPushEventLabels()
+    let labels
+    if (github.context.eventName === 'pull_request') {
+        labels = github.context.payload?.pull_request?.labels
+    } else {
+        labels = await getPushEventLabels()
+    }
     if (labels.labels === 0) {
         return labels;
     }
@@ -20,34 +26,28 @@ async function getPushEventLabels() {
     }
     // Octokit.js
     // https://github.com/octokit/core.js#readme
-    const octokit = new Octokit({
-        auth: github_token
+    const octokit = github.getOctokit(github_token)
+    const pulls = await octokit.request('GET /repos/{owner}/{repo}/commits/{commit_sha}/pulls', {
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo,
+        commit_sha: github.context.sha,
+        headers: {
+            'X-GitHub-Api-Version': '2022-11-28'
+        }
     })
-
-    try {
-        const pulls = await octokit.request('GET /repos/{owner}/{repo}/commits/{commit_sha}/pulls', {
-            owner: github.context.repo.owner,
-            repo: github.context.repo.repo,
-            commit_sha: github.context.sha
-        })
-        core.info(pulls.data[0].labels)
-        core.info(pulls.headers)
-        return pulls.data[0].labels
-    } catch (error) {
-        core.error(error)
-    }
-    return [];
+    return pulls.data[0].labels
 }
 
 function setOutputs(labels) {
-    const labelNames = labels.map(label => label.name )
+    core.info(inspect(labels))
+    const labelNames = labels.map(label => label.name)
     core.setOutput("labels", labelNames.join(','));
 
     const labelKey = core.getInput('label_key');
     const keyedValues = labelNames.filter(
-        labelName => labelName.startsWith(labelKey+":")
+        labelName => labelName.startsWith(labelKey + ":")
     ).map(
-        keyedLabel => keyedLabel.substring(labelKey.length+1, keyedLabel.length)
+        keyedLabel => keyedLabel.substring(labelKey.length + 1, keyedLabel.length)
     )
 
     const valueOrder = core.getInput('label_value_order')
