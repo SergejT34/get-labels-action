@@ -35,7 +35,10 @@ async function getPushEventLabels() {
             'X-GitHub-Api-Version': '2022-11-28'
         }
     })
-    return pulls.data[0].labels
+    if (pulls.data !== undefined && pulls.data.length > 0) {
+        return pulls.data[0].labels
+    }
+    return [];
 }
 
 function setOutputs(labels) {
